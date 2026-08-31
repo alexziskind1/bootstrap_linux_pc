@@ -88,12 +88,14 @@ init_distro() {
   case "${ID:-}" in
     fedora) DISTRO="fedora" ;;
     ubuntu) DISTRO="ubuntu" ;;
+    arch|endeavouros|manjaro|garuda|artix) DISTRO="arch" ;;
     *)
       case "${ID_LIKE:-}" in
         *fedora*|*rhel*)   DISTRO="fedora" ;;
         *ubuntu*|*debian*) DISTRO="ubuntu" ;;
+        *arch*)            DISTRO="arch" ;;
         *)
-          err "Unsupported distro: ${ID:-unknown}. Supported: Fedora, Ubuntu (and derivatives)."
+          err "Unsupported distro: ${ID:-unknown}. Supported: Fedora, Ubuntu (and derivatives), Arch (and derivatives)."
           exit 1
           ;;
       esac
