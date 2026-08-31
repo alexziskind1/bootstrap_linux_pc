@@ -51,7 +51,20 @@ pkg_name() {
 }
 
 native_pkg_installed() { pacman -Q "$1" &>/dev/null; }
-native_install_pkg()   { sudo pacman -S --noconfirm "$1"; }
+
+# pacman covers official repos; packages mapped by pkg_name() to AUR names
+# (e.g. visual-studio-code-bin, google-chrome) are installed via yay.
+native_install_pkg() {
+  if sudo pacman -S --noconfirm "$1"; then
+    return 0
+  fi
+  if have_cmd yay; then
+    yay -S --noconfirm "$1"
+  else
+    return 1
+  fi
+}
+
 native_remove_pkg()    { sudo pacman -Rns --noconfirm "$1"; }
 
 # Install AUR helper (yay) if not present
@@ -61,6 +74,13 @@ ensure_yay() {
     return 0
   fi
   log "Installing yay (AUR helper)..."
+  # Building yay with makepkg needs git and the base-devel toolchain. On a
+  # fresh Arch install neither is present (base-devel is added later by
+  # distro_install_dev_group), so guarantee them here.
+  if ! native_pkg_installed git; then
+    sudo pacman -S --noconfirm --needed git
+  fi
+  sudo pacman -S --noconfirm --needed base-devel
   local tmpdir
   tmpdir="$(mktemp -d)"
   if git clone https://aur.archlinux.org/yay.git "$tmpdir/yay" \
